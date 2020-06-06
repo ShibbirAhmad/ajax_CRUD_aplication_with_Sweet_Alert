@@ -57,7 +57,7 @@
                       <h4 class="modal-title">Add New Client</h4>
                   </div>
                   <div class="modal-body">
-                      <input type="hidden" name="id">
+                   
                       <div class="form-group">
                           <label>Name</label>
                           <input class="form-control input-sm" type="text" name="name">
@@ -71,7 +71,7 @@
                           <input class="form-control input-sm" type="text" name="phone">
                       </div>
                       <div class="form-group">
-                        <label>Country</label>
+                        <label>Country/City</label>
                         <input class="form-control input-sm" type="text" name="country">
                     </div>
                   </div>
@@ -97,10 +97,12 @@
                     <button type="button" class="close"
                             data-dismiss="modal" aria-hidden="true">&times;
                     </button>
-                    <h4 class="modal-title"></h4>
+                    <h4 class="modal-title">Update  Client info. </h4>
                 </div>
                 <div class="modal-body">
-                    <input type="hidden" name="id">
+
+                  <form class="form" id="updateClientForm" method="POST">
+                    <input type="hidden" class="form-control input-sm" name="id">
                     <div class="form-group">
                         <label>Name</label>
                         <input class="form-control input-sm" type="text" name="name">
@@ -117,13 +119,15 @@
                         <label>Country/City</label>
                         <input class="form-control input-sm" type="text" name="country">
                     </div>
+
                 </div>
                 <div class="modal-footer">
+
+                    <input  type="submit" class="btn btn-warning "  value="update">
+             
+                  </form>
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 
-                    <button type="button" class="btn btn-warning btnUpdate"
-                            onClick="update()">Update
-                    </button>
                 </div>
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
@@ -200,12 +204,15 @@
 
            // this is ajax store function 
             function store(){
+              
                 if(!confirm('Are you sure?')) return;
+                
                 $.ajax({
                     method: 'POST',
                     url: adminUrl + '/add',
                     data: getInputs(),
                     dataType: 'JSON',
+                    cache: false,
                     success: function(response){
                       if(response.success){
                           alert(response.message);
@@ -239,47 +246,58 @@
 
 
             //this is update function 
-            function update(){
-                if(!confirm('Are you sure?')) return;
-                $.ajax({
-                    method: 'PUT',
-                    url: adminUrl + '/update',
-                    data: getInputs(),
-                    dataType: 'JSON',
-                    success : function (response) {
-                       if(response.success){
-                           alert(response.message);
-                       }
-                        reset()
-                      
-                        getRecords();
+               $('#updateClientForm').submit(function(e){
+                e.preventDefault();
 
-                    },
-                    error : function(error){
-                        console.log(error)
-                    }
+                var data = $(this).serialize();
+                var url = '{{url('client/update')}}'
+
+               $.ajax({ 
+                   url : url ,
+                   method : 'POST',
+                   data : data ,
+                   dataType : 'JSON' ,
+                   cache: false,
+                   success: function(response){
+                      if(response.success){
+                          alert(response.message);
+                      }
+                   },
+                   error : function(error){
+                    console.log(error)
+                   }
                 })
 
-                edit_modal.hide()
-            }
 
+                  reset()
+
+                  getRecords()
+
+                  edit_modal.hide()
+
+            })
 
 
             //this delete function
-            $('table').on('click', '.btnDelete', function () {
+            $('table').on('click', '.btnDelete', function (e) {
+               e.preventDefault()
+      
+                var id = $(this).data(id)
+                var deltUrl = '{{url('client/deleted')}}'
                 if(!confirm('Are you sure?')) return;
-                var id = $(this).data('id');
-                var data={id:id}
+
                 $.ajax({
                     method: 'DELETE',
-                    url: adminUrl + '/delete',
-                    data:data,
+                    url: deltUrl ,
+                    data: id,
                     dataType: 'JSON',
+                    cache: false,
                     success: function (response) {
                         console.log(response)
                         if(response.success){
+
                             alert(response.message)
-                            
+                          
                         }
 
                         getRecords();

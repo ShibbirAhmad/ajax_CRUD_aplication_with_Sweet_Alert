@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Client;
+use Illuminate\Support\Facades\Validator;
 
 class ClientController extends Controller
 {
@@ -25,6 +26,8 @@ class ClientController extends Controller
     }
 
 
+     
+     //store new client 
     public function addClient(Request $request){
 
           Client::create($request->all() ); 
@@ -33,24 +36,45 @@ class ClientController extends Controller
     }
 
 
+
+
+    // update client data 
     public function updateClient(Request $request){
 
-        
-           if ($request->has('id') ) {
-               Client::find($request->input('id') )->update($request->all() );
-               return [ 'success' => true, 'message' => ' Client info. updated Successfully '] ;  
-           }
            
+             $data = Client::find($request->id ); 
+             $data->name=$request->name;
+             $data->email=$request->email;
+             $data->phone=$request->phone;
+             $data->country=$request->country;
+
+             if($data->update()){
+
+                 return [ 'success' => true, 'message' => ' Client info. updated Successfully '] ;
+             }else{
+
+                return [ 'success' => true, 'message' => '  info. updating fail '] ;
+
+             }
+
+
+
+          
+       
     }
 
 
 
-    public function deleteClient($id){
+    public function deleteClient( Request $r){
 
-        if ($request->has('id') ) {
-            Client::find($request->input('id') )->delete();
+              $client = Client::find($r->id ); 
+
+        if ( $client->delete() ) {
+            
             return [ 'success' => true, 'message' => 'Deleted one  Client  '] ;  
         }
+
+    
 
     }
 
