@@ -7,74 +7,124 @@ use Illuminate\Http\Request;
 use App\Client;
 use Illuminate\Support\Facades\Validator;
 
+
 class ClientController extends Controller
 {
-    public function home() {
-        
-           return view('ajax_home');
+    public function home()
+    {
+
+        return view('ajax_home');
     }
 
 
-    public function index() {
-        
-        return view('ajax_crud');
+    public function index()
+    {
+
+        $clients = Client::all();
+
+        return view('ajax_crud', \compact('clients'));
     }
 
-    public function getClient() {
+    public function getClient()
+    {
 
-         return Client::all();
-    }
-
-
-     
-     //store new client 
-    public function addClient(Request $request){
-
-          Client::create($request->all() ); 
-          
-          return [ 'success' => true, 'message' => ' New Client Added Successfully '] ;
+        return Client::latest()->get();
     }
 
 
+    public function addClient(Request $request)
+    {
+        //first make the validate data
+
+        $validator = Validator::make($request->all(), [
+
+            'name' => 'required',
+            'email' => 'required',
+            'phone' => 'required',
+            'country' => 'required',
+
+        ]);
 
 
-    // update client data 
-    public function updateClient(Request $request){
+        //if Validator not fail...
 
-           
-             $data = Client::find($request->id ); 
-             $data->name=$request->name;
-             $data->email=$request->email;
-             $data->phone=$request->phone;
-             $data->country=$request->country;
+        if (!$validator->fails()) {
+            $client = new Client();
+            $client->name = $request->name;
+            $client->email = $request->email;
+            $client->phone = $request->phone;
+            $client->country = $request->country;
 
-             if($data->update()){
+            //if client save
+            if ($client->save()) {
+                return response()->json([
+                    'success' => "OK",
+                    'data' => $client,
+                    'status' => "add"
 
-                 return [ 'success' => true, 'message' => ' Client info. updated Successfully '] ;
-             }else{
-
-                return [ 'success' => true, 'message' => '  info. updating fail '] ;
-
-             }
-
-
-
-          
-       
-    }
-
-
-
-    public function deleteClient( Request $r){
-
-              $client = Client::find($r->id ); 
-
-        if ( $client->delete() ) {
-            
-            return [ 'success' => true, 'message' => 'Deleted one  Client  '] ;  
+                ]);
+            }
         }
 
-    
+        return response()->json([
+            'success' => 'Fail',
+            'errors' => $validator->errors()->all()
+        ]);
+    }
+
+
+    public function updateClient(Request $request)
+    {
+        //first make the validate data
+
+        $validator = Validator::make($request->all(), [
+
+            'name' => 'required',
+            'email' => 'required',
+            'phone' => 'required',
+            'country' => 'required',
+
+        ]);
+
+
+        //if Validator not fail...
+
+        if (!$validator->fails()) {
+            //find the client with id wise
+            $client = Client::find($request->id);
+
+            //if found client
+            if ($client) {
+                $client->name = $request->name;
+                $client->email = $request->email;
+                $client->phone = $request->phone;
+                $client->country = $request->country;
+                if ($client->save()) {
+                    return response()->json([
+                        'success' => "OK",
+                        'data' => $client,
+                        'status' => "update"
+                    ]);
+                }
+            }
+        }
+
+
+    }
+
+
+    public function deleteClient(Request $r)
+    {
+        //find the client with id wise
+        $client = Client::find($r->id);
+
+        //find client delete
+        if ($client->delete()) {
+            return response()->json([
+                'success' => "OK",
+                'status'  => "Deleted"
+            ]);
+        }
 
     }
 

@@ -9,6 +9,10 @@
     <title>ajax crud pracetice</title>
     
     <link rel="stylesheet" href="{{asset('css/app.css')}}">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/8.11.8/sweetalert2.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/8.11.8/sweetalert2.all.js"></script>
    
 
 </head>
@@ -16,16 +20,21 @@
 
       <div class="container-fluid " style="background:#4e4e4e;"> 
     
-        <div class="container m-t-5 bg-info">
+        <div class="container mt-5 bg-info">
     
           <div class="col-md-12">
-              <div class="clearfix">
-                  <span>Laravel - jQuery CRUD</span>
-                  <a id="newClient" class="btn  btn-success btn-sm pull-right" data-toggle="modal" href="#add_modal" >Add New</a>
+              <div style="margin:20px;" class="clearfix">
+                  <span>Laravel - jQuery CRUD Developed By shibbirit</span>
+                  <a id="newClient" class="btn btn-xl  btn-success btn-sm pull-right" data-toggle="modal" href="#add_modal" >Add New Client Records</a>
               </div>
-  
+               <div  class="developerinfo text-center mb-3">
+                    <h2 style="color:#fc721e" class="heading ">this Ajax CRUD application </h2>
+                    <h3 class="heading ">By this application Record Create Read Udpate 
+                        and Delelete will be performed without page loading </h3>
+               </div>
               <!--data listing table-->
-              <table class="table table-bordered table-striped table-condensed">
+              <div class="table-responsive"> 
+              <table class="table table-bordered table-striped table-condensed text-center">
                   <thead>
                   <tr>
                       <td>ID</td>
@@ -40,8 +49,12 @@
   
                   </tbody>
               </table>
+            </div>
               <!--data listing table-->
   
+          </div>
+          <div  class="footerinfo text-center">
+               <h3 class="heading text-white">copyright all reserved by Shibbir Ahmad in 08-06-2020 </h3>
           </div>
         </div> 
       </div>
@@ -134,16 +147,18 @@
     </div><!-- /.modal -->
   
   
-      
-    <script  src="{{asset('js/app.js')}}" ></script>
-    
     <script  src="{{asset('js/jquery.min.js')}}"></script>
+
+    <script  src="{{asset('js/app.js')}}" ></script>
+
     <script src="{{asset('js/modal.js')}}"></script>
     
     
     
      
         <script>
+
+
             var adminUrl = '{{url('client')}}';
             var add_modal = $('#add_modal');
             var edit_modal = $('#edit_modal');
@@ -151,12 +166,14 @@
             var btnUpdate = $('.btnUpdate');
 
             $.ajaxSetup({
+              
                 headers: {'X-CSRF-Token': '{{csrf_token()}}'}
             });
 
 
              //this is get function of data
             function getRecords() {
+
                 $.get(adminUrl + '/data')
                     .then(function (data) {
                         var html='';
@@ -169,12 +186,14 @@
                             html += '<td>' + row.country + '</td>'
                             html += '<td>'
                             html += '<a data-toggle="modal" href="#edit_modal" class="btn btn-xs btn-warning btnEdit" title="Edit Record" >Edit</a>'
-                            html += '<button type="button" class="btn btn-xs btn-danger btnDelete" data-id="' + row.id + '" title="Delete Record">Delete</button>'
+                            html += '<button type="button" style="margin-left:5px" class="btn btn-xs btn-danger btnDelete" data-id="' + row.id + '" title="Delete Record">Delete</button>'
                             html += '</td> </tr>';
                         })
                         $('table tbody').html(html)
                     })
             }
+
+
             getRecords()
 
             
@@ -214,12 +233,20 @@
                     dataType: 'JSON',
                     cache: false,
                     success: function(response){
-                      if(response.success){
-                          alert(response.message);
+                        if (response.success == "OK") {
+
+                          add_modal.modal('hide');
+
+
+                          Swal.fire({
+                              type: 'success',
+                              text: "client "+response.status + " successfully",
+                          });
+
                       }
 
                       reset()
-                      add_modal.hide()
+                   
                       getRecords()
                    },
                 })
@@ -246,36 +273,57 @@
 
 
             //this is update function 
-               $('#updateClientForm').submit(function(e){
-                e.preventDefault();
+               $('#updateClientForm').on('submit',function(e){
+                e.preventDefault()
 
                 var data = $(this).serialize();
                 var url = '{{url('client/update')}}'
-
+                  if(!confirm('Are you sure ? ')) return ;
                $.ajax({ 
                    url : url ,
                    method : 'POST',
                    data : data ,
                    dataType : 'JSON' ,
+
                    cache: false,
                    success: function(response){
-                      if(response.success){
-                          alert(response.message);
-                      }
+
+                    if(response.success=="OK"){
+                         
+                        reset()
+
+                        getRecords()
+
+                        edit_modal.modal('hide');
+                        
+
+                        Swal.fire({
+                        type: 'success',
+                        text: "client " +response.status + " successfully",
+                        });
+
+                        }else {
+
+                        ///validation error
+                        Swal.fire({
+                            type: 'error',
+                            title: '<P style="color: red;">Oops...<p>',
+                            text: resp.errors,
+                            footer: '<b> Something Wrong</b>'
+                        });
+                        }
+                        
                    },
+
                    error : function(error){
-                    console.log(error)
+
+                       alert('something went wrong')
                    }
-                })
+                   
+                });
 
 
-                  reset()
-
-                  getRecords()
-
-                  edit_modal.hide()
-
-            })
+            });
 
 
             //this delete function
@@ -294,10 +342,13 @@
                     cache: false,
                     success: function (response) {
                         console.log(response)
-                        if(response.success){
+                        if(response.success=='OK'){
 
-                            alert(response.message)
-                          
+                            Swal.fire({
+                              type: 'success',
+                              text: "client "+response.status + " successfully",
+                          });
+
                         }
 
                         getRecords();
